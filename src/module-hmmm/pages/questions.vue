@@ -39,14 +39,10 @@
         </el-row>
         <el-row type='flex'>
            <el-form-item label="关键字" style="background-color:#ddd;margin-right:8px" prop="keyword">
-            <el-select v-model="loginForm.keyword">
-              <el-option v-for="item in  keywordList" :key="item.value" :label="item.label" :value="item.value"></el-option>
-            </el-select>
+              <el-input></el-input>
           </el-form-item>
           <el-form-item label="题目备注" style="background-color:#ddd;margin-right:8px" prop="remarks">
-            <el-select v-model="loginForm.remarks">
-              <el-option v-for="item in remarksList" :key="item.value" :label="item.label" :value="item.value"></el-option>
-            </el-select>
+            <el-input></el-input>
           </el-form-item>
           <el-form-item label="企业简称" style="background-color:#ddd;margin-right:8px" prop="shortName">
             <el-select v-model="loginForm.shortName">
@@ -60,7 +56,7 @@
           </el-form-item>
           <el-form-item label="录入人" style="background-color:#ddd;margin-right:8px" prop="creatorID">
             <el-select v-model="loginForm.creatorID">
-              <el-option v-for="item in creatorIDList" :key="item.value"></el-option>
+              <el-option v-for="(item,index) in creatorIDList" :key="index" :label="item" :value="item"></el-option>
             </el-select>
           </el-form-item>
         </el-row>
@@ -72,11 +68,10 @@
           </el-form-item>
           <div style="margin-left:700px">
             <el-button type="danger">清除</el-button>
-            <el-button type="primary" @click="search">搜索</el-button>
+            <el-button type="primary" @click="getlist">搜索</el-button>
           </div>        
         </el-row>
       </el-form>  
-
            <el-table
       :data="tableData"
       stripe
@@ -100,7 +95,7 @@
       <el-table-column
         prop="questionType"
         label="题型"
-        width='80'>
+        width='80' :formatter="questionTypeFMT">
       </el-table-column>
       <el-table-column
         prop="question"
@@ -117,7 +112,7 @@
       <el-table-column
         prop="difficulty"
         label="难度"
-        width='50'>
+        width='50' :formatter="difficultyFMT">
       </el-table-column>
       <el-table-column
         prop="address"
@@ -148,9 +143,9 @@
       layout="total, sizes, prev, pager, next, jumper"
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
-      :current-page="page.currentPage"
-      :page-size="page.pageSize"
-      :total="page.total">
+      :current-page="loginForm.page"
+      :page-size="loginForm.pageSize"
+      :total="loginForm.total">
     </el-pagination>
     </el-row>
 
@@ -159,20 +154,20 @@
   
 </template>
 <script>
-import {simple} from '@/api/hmmm/subjects'
-import {simple as simples} from '@/api/hmmm/tags'
-import {list, remove, choicePublish} from '@/api/hmmm/questions'
+import {simple as simpled} from '@/api/base/users'// 用户列表
+import {simple as simplesd} from '@/api/hmmm/directorys'// 目录列表
+import {simple} from '@/api/hmmm/subjects'// 学科列表
+import {simple as simples} from '@/api/hmmm/tags'// 标签列表
+import {list, remove, choicePublish} from '@/api/hmmm/questions'// 基础题库列表
 // 起个别名给这个数组 直接当作值传入就可以了
-import {provinces, citys} from '@/api/hmmm/citys'
-import {difficulty as difficultyList, questionType as questionTypeList, direction as directionList} from '@/api/hmmm/constants'
+import {provinces, citys} from '@/api/hmmm/citys'// 城市列表
+import {difficulty as difficultyList, questionType as questionTypeList, direction as directionList} from '@/api/hmmm/constants'// 常量列表
 export default {
   name: 'QuestionsList',
   data() {
     return {
       publish: '1',
-      total: 0,
-      page: 1,
-      pagesize: 10,
+     
       tableData: [],
       subjectIDList: [],
       difficultyList,
@@ -186,6 +181,9 @@ export default {
       creatorIDList: [],
       catalogIDList: [],
       loginForm: {
+        total: 0,
+        page: 1,
+        pagesize: 10,
         subjectID: '',
         difficulty: '',
         questionType: '',
@@ -205,19 +203,34 @@ export default {
     this.getsubjectID()// 学科获取
     this.getdifficulty()// 难度获取
     this.getlist()// 题库列表
- 
+    this.getcatalogID()// 二级目录
+    this.getuser()// 用户列表
   },
   methods: {
+    // 用户列表
+    async getuser() {
+        let ref = await simpled()         
+        this.creatorIDList = ref.data 
+    },
+    // ------------------------------阻止默认跳转@click.prevent
+    // 更改题型数字为文字
+    questionTypeFMT(row, colum, cellValue) {
+        return questionTypeList[cellValue - 1]['label']       
+    },
+    // 更改难度数字类型为文字
+    difficultyFMT(row, colum, cellValue) {
+        return difficultyList[cellValue - 1]['label']
+    },
     // 分页
      handleCurrentChange (val) {
-      this.page.currentPage = val
-      this.loadComment()
+      this.loginForm.page = val
+      this.getlist()
       //  这时候当我们改变页码时 会传入一个参数这个参数就是当前页码的数  我们把这个数重新传入  然后发送请求  就会把这一夜的数据给你返回来
     },
     // 分页
      handleSizeChange (val) {
-      this.page.pageSize = val
-      this.loadComment()
+      this.loginForm.pageSize = val
+      this.getlist()
     },
     // 获取学科列表
     async getsubjectID() {
@@ -231,14 +244,10 @@ export default {
       this.tagsList = ref.data
     },
     // 拉取列表
-    async getlist() {
-      let data = {
-        page: this.page,
-        pagesize: this.pagesize
-      }
-      let ref = await list(data)
+    async getlist() {  
+      let ref = await list(this.loginForm)
       this.tableData = ref.data.items         
-      this.total = ref.data.pages
+      this.loginForm.total = ref.data.pages
       
     },
     // 获取省份
@@ -269,6 +278,10 @@ export default {
     // 文章修改
     async altertsxt(data) {
       this.$router.push(`/questions/new/${data.id}`)     
+    },
+    async getcatalogID() {
+      let ref = await simplesd()
+      this.catalogIDList = ref.data
     }
   }
 }
