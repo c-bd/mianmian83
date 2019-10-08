@@ -2,7 +2,7 @@
   <div class="dashboard-container">
     <!-- 两个按钮 -->
   <el-row class="dashboard-button">
-    <el-button >新建标签</el-button>
+    <el-button @click="open">新建标签</el-button>
     <el-button @click='skiP'>返回学科</el-button>
   </el-row>
   <!-- 模糊搜索 -->
@@ -11,8 +11,9 @@
     <el-input style="width:240px;"></el-input>
   </el-row>
   <!-- 表格 -->
+  <el-row type="flex" align="middle" class="dashboard-table">
   <el-table class="dashboard-table" :data="TagsList">
-    <el-table-column align="center" label="序号"  prop="id"></el-table-column>
+    <el-table-column align="center" label="序号"  type="index"></el-table-column>
     <el-table-column align="center" label="标签名称"  prop="tagName"></el-table-column>
     <el-table-column align="center" label="创建者" prop="username"></el-table-column>
     <el-table-column align="center" label="创建日期">
@@ -26,7 +27,7 @@
         <span>{{scope.row.state===1?'开启':'屏蔽'}}</span>
       </template>
     </el-table-column>
-    <el-table-column align="center" fixed='right' label="操作">
+    <el-table-column align="center" label="操作">
        <template>
         <el-button
           type="text"
@@ -46,6 +47,7 @@
       </template>
     </el-table-column>
   </el-table>
+  </el-row>
   <!-- 分页 -->
   <el-row type="flex" justify="center" >
     <el-pagination
@@ -75,6 +77,14 @@ export default {
     }
   },
   methods: {
+          open() {
+        this.$prompt('请输入标签名', '新建标签', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消'
+        }).then(() => {
+
+        })
+      },
     skiP() {
       this.$router.push('/subjects/list')
     },
