@@ -13,7 +13,7 @@ import { createAPI } from '@/utils/request'
 export const list = data => createAPI('/questions', 'get', data)
 
 // 基础题库详情
-export const detail = data => createAPI(`/questions/${data.id}`, 'get', data)
+export const detail = data => createAPI(`/questions/${data}`, 'get', data)
 
 // 批量导入题
 export const batch = data => createAPI('/questions/batch', 'post', data)
@@ -22,7 +22,7 @@ export const batch = data => createAPI('/questions/batch', 'post', data)
 export const add = data => createAPI('/questions', 'post', data)
 
 // 基础题库修改
-export const update = data => createAPI(`/questions/${data.id}`, 'put', data)
+export const update = data => createAPI(`/questions/${data}`, 'put', data)
 
 // 基础题库删除
 export const remove = data => createAPI(`/questions/${data.id}`, 'delete', data)
