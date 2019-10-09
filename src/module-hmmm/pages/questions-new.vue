@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <el-form style="margin-left:30px;margin-top:30px" :model="fromData" status-icon :rules="loginRules" ref="ruleForm"  >
+    <el-form style="margin-left:30px;margin-top:30px" :model="fromData" status-icon :rules="loginRules" ref="publishForm"  >
       <!-- 学科 -->
       <el-form-item label="学科：" prop="subjectID">
         <el-select placeholder="请选择" style="width:440px" v-model="fromData.subjectID">
@@ -129,7 +129,7 @@
 
 <script>
 // 基础题库详情
-import {detail, update} from '@/api/hmmm/questions'
+import {detail, update, add} from '@/api/hmmm/questions'
 // 学科
 import { simple } from '@/api/hmmm/subjects'
 // 目录
@@ -191,20 +191,23 @@ export default {
         ],
         difficultyList: [
           { required: true, message: '请选择难度' }
-        ],
-        tags: [
-          { required: true, message: '请输入试题标签' }
         ]
+        // tags: [
+        //   { required: true, message: '请输入试题标签' }
+        // ]
 
       }
     }
   },
   methods: {
-    async publish() {
-      // 提交修改
-      let { articleId } = this.$route.params
-      this.fromData.id = articleId
-      let ref = await update(this.fromData)
+     publish() {
+      // 提交修改---新增内容    
+      this.$refs.publishForm.validate((isOk) => {
+         let { articleId } = this.$route.params
+         this.fromData.id = articleId
+         articleId ? update(this.fromData) : add(this.fromData)
+      })
+      
     },
         // 根据id获取数据详情
       async getQuestion(articleId) {
@@ -240,7 +243,8 @@ export default {
   created() {
     // 获取动态路由参数
     let { articleId } = this.$route.params
-    this.getQuestion(articleId)// 获取基础题库详情
+    // this.getQuestion(articleId)// 获取基础题库详情
+    articleId && this.getQuestion(articleId)
     this.getSubjectIDList()
     this.getcatalogIDList()
     this.getshortNameList()

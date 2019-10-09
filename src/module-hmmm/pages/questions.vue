@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-container">
     <div class="app-container">
-      <el-button>新增试题</el-button>
+      <el-button @click="addsubject">新增试题</el-button>
       <el-button>批量导入</el-button>
       <el-form label-width="80px" style='text-align:center' :model="loginForm" ref="ruleForm">
         <el-row type="flex" style="margin:10px 0px 0px 0px">
@@ -67,7 +67,7 @@
             </el-select>
           </el-form-item>
           <div style="margin-left:700px">
-            <el-button type="danger">清除</el-button>
+            <el-button type="danger" @click="cleareSeek">清除</el-button>
             <el-button type="primary" @click="getlist">搜索</el-button>
           </div>        
         </el-row>
@@ -166,8 +166,7 @@ export default {
   name: 'QuestionsList',
   data() {
     return {
-      publish: '1',
-     
+      publish: '1',    
       tableData: [],
       subjectIDList: [],
       difficultyList,
@@ -207,6 +206,13 @@ export default {
     this.getuser()// 用户列表
   },
   methods: {
+    addsubject() {
+      this.$router.push('/questions/new')
+    },
+    // 清除搜索列表全部
+    cleareSeek() {
+      this.loginForm = ''
+    },
     // 用户列表
     async getuser() {
         let ref = await simpled()         
@@ -260,8 +266,8 @@ export default {
    },
   //  删除文章列表
    async deletelist(id) {
-     await this.$confirm('你确定要删除吗？')
-     await remove(id)
+     this.$confirm('你确定要删除吗？')
+     await remove(id)    
      this.$message('删除成功')
      this.getlist()
     },
