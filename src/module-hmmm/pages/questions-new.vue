@@ -155,6 +155,7 @@ export default {
       shortNameList: [],
       cityList: [],
       fromData: {
+        id: '',
         subjectID: '',
         catalogID: '',
         shortName: '',
@@ -200,15 +201,17 @@ export default {
   },
   methods: {
     async publish() {
-      let { articleId } = this.$route.params      
-      let ref = await update(articleId)
-      debugger
-      
+      // 提交修改
+      let { articleId } = this.$route.params
+      this.fromData.id = articleId
+      let ref = await update(this.fromData)
     },
         // 根据id获取数据详情
       async getQuestion(articleId) {
        let ref = await detail(articleId)
-       this.fromData = ref.data
+       this.fromData = ref.data     
+       this.fromData.questionType = parseInt(ref.data.questionType)
+       this.fromData.difficulty = parseInt(ref.data.difficulty) 
       },
     // 获取县区的值
      getcity() {
