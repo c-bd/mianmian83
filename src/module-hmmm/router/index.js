@@ -49,7 +49,7 @@ export default [
         meta: { title: '试题修改', noCache: true }
       },
       {
-        path: 'new/',
+        path: 'new',
         component: _import('hmmm/pages/questions-new'),
         name: 'questions-new',
         meta: { title: '试题录入', noCache: true }
@@ -89,8 +89,7 @@ export default [
         path: 'tags',
         component: _import('hmmm/pages/tags'),
         name: 'subjects-tags',
-        meta: { title: '标签', noCache: true },
-        hidden: true
+        meta: { title: '标签', noCache: true }
       }
     ]
   },

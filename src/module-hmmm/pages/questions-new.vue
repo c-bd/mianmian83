@@ -26,7 +26,7 @@
       <!-- 企业 -->
       <el-form-item label="企业：" prop="enterpriseID"> 
         <el-select placeholder="请选择" style="width:440px" v-model="fromData.enterpriseID">
-          <el-option v-for="item in shortNameList " :key="item.value" :value="item"></el-option>
+          <el-option v-for="item in shortNameList " :key="item.id" :value="item.id" :label="item.company"></el-option>
         </el-select>
       </el-form-item>
       <!-- 城市 -->
@@ -49,73 +49,44 @@
       <!-- 题型 -->
       <el-form-item label="题型：" prop="questionType">
       <el-radio-group v-model="fromData.questionType">
-        <el-radio :label="1">单选</el-radio>
-        <el-radio :label="2">多选</el-radio>
-        <el-radio :label="3">简答</el-radio>
+        <el-radio v-for="(item,index) in questionTypeList" :key="index"  :label="item.value+''">{{item.label}}</el-radio>
       </el-radio-group>
       </el-form-item>
       <!-- 难度 -->
          <el-form-item label="难度：" prop="difficulty">
         <el-radio-group v-model="fromData.difficulty">
-          <el-radio :label="1">简单</el-radio>
-          <el-radio :label="2">一般</el-radio>
-          <el-radio :label="3">困难</el-radio>
+           <el-radio v-for="(item,index) in difficultyList" :key="index"  :label="item.value+''">{{item.label}}</el-radio>
         </el-radio-group>
          </el-form-item>
         
       <!-- 文本域 -->
-      题干：
-      <el-input
-    style="margin-top:30px"
-  type="textarea"
-  :rows="10"
-  placeholder="请输入内容"
-  v-model="textarea">
-</el-input>
+        <el-form-item label="题干：">
+          <el-input type="textarea" v-model="fromData.question"></el-input>
+        </el-form-item>
 <!-- 选项 -->
-      <el-form-item label="选项：" prop="option">
-          <el-radio-group style="margin-top:50px;margin-left:-53px" v-model="fromData.option">
-            <div style="margin-top:10px">
-              <el-radio :label="1">
-            A:    <el-input></el-input>
-              </el-radio>      
-            </div>
-            <div style="margin-top:10px">
-              <el-radio :label="2">
-            B:    <el-input></el-input>
-               </el-radio>       
-           </div>
-           <div style="margin-top:10px">
-              <el-radio :label="3">          
-            C:    <el-input></el-input>
-              </el-radio>
-           </div>
-           <div style="margin-top:10px">
-              <el-radio :label="4">
-            D:    <el-input></el-input>
-              </el-radio>
-            </div>
-            <el-button type="info" plain style="margin-top:30px">+增加选项与答案</el-button>
-            </el-radio-group>     
+<el-form-item label="选项：" prop="options"><br />
+  <el-radio v-model="singleSelect" :label="0">
+    A: <el-input type="text" v-model="fromData.options[0]['title']"></el-input>
+  </el-radio><br />
+  <el-radio v-model="singleSelect" :label="1">
+    B: <el-input type="text" v-model="fromData.options[1]['title']"></el-input>
+  </el-radio><br />
+  <el-radio v-model="singleSelect" :label="2">
+    C: <el-input type="text" v-model="fromData.options[2]['title']"></el-input>
+  </el-radio><br />
+  <el-radio v-model="singleSelect" :label="3">
+    D: <el-input type="text" v-model="fromData.options[3]['title']"></el-input>
+  </el-radio>
+            <!-- <el-button type="info" plain style="margin-top:30px">+增加选项与答案</el-button>    -->
       </el-form-item>      
       <!-- 答案解析文本域 -->
-      答案解析：
-        <el-input
-    style="margin-top:30px"
-  type="textarea"
-  :rows="10"
-  placeholder="请输入内容"
-  v-model="textarea">
-</el-input>
+      <el-form-item label="答案：">
+          <el-input type="textarea" v-model="fromData.answer"></el-input>
+        </el-form-item>
 <!-- 题目备注文本域 -->
-题目备注：
-  <el-input
-    style="margin-top:30px"
-  type="textarea"
-  :rows="10"
-  placeholder="请输备注"
-  v-model="textarea">
-</el-input>
+        <el-form-item label="备注：">
+          <el-input type="textarea" v-model="fromData.remarks"></el-input>
+        </el-form-item>
   <el-form-item label="试题标签：" style='margin-top:20px' prop="tags">
     <el-input style="width:30%"  placeholder="请输入" v-model="fromData.tags"></el-input>
   </el-form-item>
@@ -151,7 +122,10 @@ export default {
     return {
       subjectIDList: [],
       catalogIDList: [],
-      directionList,    
+      directionList, 
+      questionTypeList, 
+      difficultyList, 
+      singleSelect: '', // 感知被选中的项目的值 
       shortNameList: [],
       cityList: [],
       fromData: {
@@ -162,10 +136,20 @@ export default {
         direction: 1,
         province: '',
         city: '',
-        questionType: 1,
-        difficulty: 2,
-        options: 2,
-        tags: ''
+        questionType: '1',
+        difficulty: '2',
+        question: '',
+        answer: '',
+        remarks: '',
+        videoURl: 'http://www.lifei.com',
+        tags: '',
+        options: [
+    { code: 'A', title: '', img: '', isRight: false },
+    { code: 'B', title: '', img: '', isRight: false },
+    { code: 'C', title: '', img: '', isRight: false },
+    { code: 'D', title: '', img: '', isRight: false }
+  ]
+
       },
       loginRules: {
         subjectID: [
@@ -202,11 +186,12 @@ export default {
   methods: {
      publish() {
       // 提交修改---新增内容    
-      this.$refs.publishForm.validate((isOk) => {
-         let { articleId } = this.$route.params
-         this.fromData.id = articleId
-         articleId ? update(this.fromData) : add(this.fromData)
-      })
+      // this.$refs.publishForm.validate((isOk) => {
+      //    let { articleId } = this.$route.params
+      //    this.fromData.id = articleId
+      //    articleId ? update(this.fromData) : 
+      // })
+      add(this.fromData)
       
     },
         // 根据id获取数据详情
@@ -235,7 +220,7 @@ export default {
     // 获取企业
     async getshortNameList() {
       var rss = await list()   
-      this.shortNameList = rss.data.items[0].shortName     
+      this.shortNameList = rss.data.items     
     },
     // 获取城市
       provinces

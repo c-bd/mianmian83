@@ -22,7 +22,7 @@ export const batch = data => createAPI('/questions/batch', 'post', data)
 export const add = data => createAPI('/questions', 'post', data)
 
 // 基础题库修改
-export const update = data => createAPI(`/questions/${data}`, 'put', data)
+export const update = data => createAPI(`/questions/${data.id}`, 'put', data)
 
 // 基础题库删除
 export const remove = data => createAPI(`/questions/${data.id}`, 'delete', data)
