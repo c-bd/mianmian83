@@ -64,7 +64,8 @@
           <el-input type="textarea" v-model="fromData.question"></el-input>
         </el-form-item>
 <!-- 选项 -->
-<el-form-item label="选项：" prop="options"><br />
+<el-form-item label="选项：" prop="options" v-if="allShow"><br />
+<template v-if="radioShow">
   <el-radio v-model="singleSelect" :label="0">
     A: <el-input type="text" v-model="fromData.options[0]['title']"></el-input>
   </el-radio><br />
@@ -77,8 +78,26 @@
   <el-radio v-model="singleSelect" :label="3">
     D: <el-input type="text" v-model="fromData.options[3]['title']"></el-input>
   </el-radio>
+  </template>
+  <template v-else>
+  <el-checkbox v-model="fromData.options[0]['isRight']"> 
+  A: <el-input type="text" v-model="fromData.options[0]['title']"></el-input>
+</el-checkbox><br />
+<el-checkbox v-model="fromData.options[1]['isRight']"> 
+  B: <el-input type="text" v-model="fromData.options[1]['title']"></el-input>
+</el-checkbox><br />
+<el-checkbox v-model="fromData.options[2]['isRight']"> 
+  C: <el-input type="text" v-model="fromData.options[2]['title']"></el-input>
+</el-checkbox><br />
+<el-checkbox v-model="fromData.options[3]['isRight']"> 
+  D: <el-input type="text" v-model="fromData.options[3]['title']"></el-input>
+</el-checkbox>
+  </template>
             <!-- <el-button type="info" plain style="margin-top:30px">+增加选项与答案</el-button>    -->
-      </el-form-item>      
+      </el-form-item>  
+  <el-form-item label="简答：" v-else>
+    <el-input type="textarea" v-model="fromData.answerboor"></el-input>
+  </el-form-item>    
       <!-- 答案解析文本域 -->
       <el-form-item label="答案：">
           <el-input type="textarea" v-model="fromData.answer"></el-input>
@@ -128,6 +147,8 @@ export default {
       singleSelect: '', // 感知被选中的项目的值 
       shortNameList: [],
       cityList: [],
+      radioShow: true, // 默认显示单选项目
+      allShow: true, // 单选或多选默认显示一个
       fromData: {
         id: '',
         subjectID: '',
@@ -139,9 +160,10 @@ export default {
         questionType: '1',
         difficulty: '2',
         question: '',
+        answerboor: '', // 简答
         answer: '',
         remarks: '',
-        videoURl: 'http://www.lifei.com',
+        videoURL: 'http://www.xxx.com', // 解析视频
         tags: '',
         options: [
     { code: 'A', title: '', img: '', isRight: false },
@@ -175,31 +197,58 @@ export default {
         ],
         difficultyList: [
           { required: true, message: '请选择难度' }
+        ],
+        tags: [
+          { required: true, message: '请输入试题标签' }
         ]
-        // tags: [
-        //   { required: true, message: '请输入试题标签' }
-        // ]
 
       }
+    }
+  },
+  watch: {
+   
+    // 对题型进行监听
+    'fromData.questionType': function(newval) {
+      // console.log(newval)
+      if (Number(newval) === 1) {
+        // newval=1 单选
+        this.radioShow = true
+        this.allShow = true
+      } else if (Number(newval) === 2) {
+        // newval=2 多选
+        this.radioShow = false
+        this.allShow = true
+      } else {
+        // newval=3 简答
+        this.allShow = false
+      }
+    },
+    singleSelect(newval) {
+      // 监听选项的变化 
+      for (let index = 0; index < 4; index++) {
+        this.fromData.options[index].isRight = false              
+      }
+      this.fromData.options[newval].isRight = true
     }
   },
   methods: {
      publish() {
       // 提交修改---新增内容    
-      // this.$refs.publishForm.validate((isOk) => {
-      //    let { articleId } = this.$route.params
-      //    this.fromData.id = articleId
-      //    articleId ? update(this.fromData) : 
-      // })
-      add(this.fromData)
-      
+      this.$refs.publishForm.validate((isOk) => {
+         let { articleId } = this.$route.params
+         this.fromData.id = articleId
+         articleId ? update(this.fromData) : add(this.fromData) 
+         this.$router.push('/questions/list')
+      })  
+         
     },
         // 根据id获取数据详情
       async getQuestion(articleId) {
+        debugger
        let ref = await detail(articleId)
        this.fromData = ref.data     
-       this.fromData.questionType = parseInt(ref.data.questionType)
-       this.fromData.difficulty = parseInt(ref.data.difficulty) 
+      //  this.fromData.questionType = parseInt(ref.data.questionType)
+      //  this.fromData.difficulty = parseInt(ref.data.difficulty) 
       },
     // 获取县区的值
      getcity() {
